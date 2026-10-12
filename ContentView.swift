@@ -161,7 +161,7 @@ struct Tachometer: View {
             func ang(_ v: Double) -> Angle { .degrees(start.degrees + sweep * v / maxRpm) }
             func pt(_ v: Double, _ rr: CGFloat) -> CGPoint {
                 let a = ang(v).radians
-                return CGPoint(x: c.x + cos(a) * rr, y: c.y + sin(a) * rr)
+                return CGPoint(x: c.x + CGFloat(cos(a)) * rr, y: c.y + CGFloat(sin(a)) * rr)
             }
             // zona vermelha
             var red = Path()
