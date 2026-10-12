@@ -1,0 +1,41 @@
+name: Compilar iOS
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Versão do Xcode
+        run: xcodebuild -version
+
+      - name: Compilar (sem assinatura)
+        run: |
+          xcodebuild -project V8.xcodeproj -target V8 -configuration Release \
+            -sdk iphoneos SYMROOT="$PWD/build" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build | tee build.log | grep -E "error:|warning: unre|BUILD" || true
+          test -d build/Release-iphoneos/V8.app
+
+      - name: Criar V8.ipa
+        run: |
+          mkdir -p Payload
+          cp -R build/Release-iphoneos/V8.app Payload/
+          zip -qry V8.ipa Payload
+
+      - name: Guardar V8.ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: V8-ipa
+          path: V8.ipa
+
+      - name: Guardar registo em caso de erro
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
